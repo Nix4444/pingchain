@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,43 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
 }
 
-model Website{
-  id        String   @id @default(uuid())
-  url String
+model Website {
+  id     String         @id @default(uuid())
+  url    String
   userId String
-  ticks WebsiteTicks[]
-
+  ticks  WebsiteTicks[]
+  disabled Boolean @default(false)
 }
 
-model Validator{
-  id String @id @default(uuid())
+model Validator {
+  id        String         @id @default(uuid())
   publicKey String
-  location String
-  ip String
-  ticks WebsiteTicks[]
-
+  location  String
+  ip        String
+  ticks     WebsiteTicks[]
 }
 
-model WebsiteTicks{
-  id String @id @default(uuid())
-  websiteId String
-  website Website @relation(fields: [websiteId], references: [id])
+model WebsiteTicks {
+  id          String        @id @default(uuid())
+  websiteId   String
   validatorId String
-  validator Validator @relation(fields: [validatorId], references: [id])
-  timestamp DateTime
-  latency Float
-  status WebsiteStatus
+  timestamp   DateTime
+  latency     Float
+  status      WebsiteStatus
+  validator   Validator     @relation(fields: [validatorId], references: [id])
+  website     Website       @relation(fields: [websiteId], references: [id])
 }
 
-enum WebsiteStatus{
+enum WebsiteStatus {
   HEALTHY
   UNHEALTHY
   UNKNOWN
