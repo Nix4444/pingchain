@@ -2,10 +2,13 @@ import express from "express"
 import dotnev from "dotenv"
 import { authMiddleware } from "./middleware"
 import { prismaClient } from "@repo/db"
+import cors from "cors";
 dotnev.config()
 const PORT = process.env.PORT || 8080
 const app = express();
+app.use(cors())
 app.use(express.json())
+
 
 //add zod
 
@@ -70,6 +73,9 @@ app.get("/api/websites", authMiddleware, async (req, res) => {
             where: {
                 userId: userId,
                 disabled: false
+            },
+            include: {
+                ticks: true
             }
         })
         res.json({

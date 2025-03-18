@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useWebsites } from "@/hooks/useWesbites";
+import { 
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 import { 
   Card, 
   CardContent, 
@@ -8,178 +14,140 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { useMemo } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { UptimeStatus } from "@repo/types";
 
-// Mock data - in a real app, this would come from your API
-const websites = [
-  {
-    id: 1,
-    name: "example.com",
-    url: "https://example.com",
-    status: "up", // up or down
-    uptime: "99.8%",
-    responseTime: "124ms",
-    lastChecked: "2 minutes ago",
-    history: [true, true, true, false, true, true, true, true, true, true] // true = up, false = down
-  },
-  {
-    id: 2,
-    name: "mystore.io",
-    url: "https://mystore.io",
-    status: "up",
-    uptime: "100%",
-    responseTime: "89ms",
-    lastChecked: "1 minute ago",
-    history: [true, true, true, true, true, true, true, true, true, true]
-  },
-  {
-    id: 3,
-    name: "api.service.org",
-    url: "https://api.service.org",
-    status: "down",
-    uptime: "82.3%",
-    responseTime: "543ms",
-    lastChecked: "Just now",
-    history: [false, false, true, true, true, false, false, true, true, false]
-  },
-  {
-    id: 4,
-    name: "dashboard.myapp.com",
-    url: "https://dashboard.myapp.com",
-    status: "up",
-    uptime: "99.1%",
-    responseTime: "201ms",
-    lastChecked: "3 minutes ago",
-    history: [true, true, true, true, false, true, true, true, true, true]
-  },
-];
+// Reusable component to show a row of colored tick bars
+function UptimeTicks({ ticks }: { ticks: UptimeStatus[] }) {
+  return (
+    <div className="flex gap-1 mt-2">
+      {ticks.map((tick, index) => (
+        <div
+          key={index}
+          className={`w-8 h-2 rounded ${
+            tick === "HEALTHY"
+              ? "bg-green-500"
+              : tick === "UNHEALTHY"
+              ? "bg-red-500"
+              : "bg-gray-500"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Helper to get status color for text
+function getStatusColor(status: "HEALTHY" | "UNHEALTHY" | "UNKNOWN") {
+  switch (status) {
+    case "HEALTHY":
+      return "text-green-500";
+    case "UNHEALTHY":
+      return "text-red-500";
+    case "UNKNOWN":
+    default:
+      return "text-gray-500";
+  }
+}
+
+// Helper to format date
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString();
+}
 
 export default function Dashboard() {
-  const [sites, setSites] = useState(websites);
+  const { websites, isLoading, error } = useWebsites();
+  const { getToken } = useAuth();
   
+  // 30 minutes ago
+  const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+  // Sort & filter ticks once so we don’t do it repeatedly in the JSX
+  const processedWebsites = useMemo(() => {
+    return websites.map((website) => {
+      // Sort ascending by timestamp (oldest first)
+      const sortedTicks = [...website.ticks].sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+
+      // Filter for only the last 30 minutes
+      const recentTicks = sortedTicks.filter(
+        (tick) => new Date(tick.timestamp) >= thirtyMinAgo
+      );
+
+      return {
+        ...website,
+        sortedTicks,
+        recentTicks,
+      };
+    });
+  }, [websites, thirtyMinAgo]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Loading websites...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-red-500">Error loading websites: {error.message}</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Website Monitoring</h1>
-          <p className="text-gray-500 dark:text-gray-400">Monitor your websites' uptime in real-time</p>
-        </div>
-        <Button className="bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Website
-        </Button>
-      </div>
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Website Monitoring Dashboard</h1>
       
-      <div className="grid grid-cols-1 gap-6">
-        {sites.map((site) => (
-          <Card 
-            key={site.id} 
-            className="shadow-md transition-all duration-300 hover:shadow-lg hover:translate-y-[-2px]"
-          >
-            <Accordion type="single" collapsible>
-              <AccordionItem value={`site-${site.id}`} className="border-none">
-                <AccordionTrigger className="py-0 hover:no-underline">
-                  <CardHeader className="py-4 flex flex-row items-center justify-between w-full">
-                    <div className="flex items-center">
-                      <div 
-                        className={`h-4 w-4 rounded-full mr-4 ${
-                          site.status === "up" 
-                            ? "bg-green-500" 
-                            : "bg-red-500"
-                        }`}
-                      />
-                      <div>
-                        <CardTitle className="text-lg">{site.name}</CardTitle>
-                        <CardDescription className="text-sm text-gray-500 dark:text-gray-400">
-                          {site.url}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-8 text-sm text-gray-500 dark:text-gray-400">
-                      <div>
-                        <div className="font-semibold">Uptime</div>
-                        <div>{site.uptime}</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">Response</div>
-                        <div>{site.responseTime}</div>
-                      </div>
-                      <div>
-                        <div className="font-semibold">Last Check</div>
-                        <div>{site.lastChecked}</div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </AccordionTrigger>
+      {processedWebsites.length === 0 ? (
+        <p>No websites found. Add a website to start monitoring.</p>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+          {processedWebsites.map((website) => {
+            // The *latest* tick is the last item in sortedTicks (because it’s oldest → newest)
+            const latestTick = website.sortedTicks[website.sortedTicks.length - 1];
+            const currentStatus = latestTick?.status || "UNKNOWN";
+
+            return (
+              <Card key={website.id} className={website.disabled ? "opacity-60" : ""}>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{website.url}</span>
+                    <span className={getStatusColor(currentStatus)}>
+                      {currentStatus}
+                    </span>
+                  </CardTitle>
+                  <CardDescription>
+                    {website.disabled ? "Monitoring disabled" : "Monitoring active"}
+                  </CardDescription>
+                </CardHeader>
                 
-                <AccordionContent>
-                  <CardContent className="pt-0">
-                    <div className="mb-4">
-                      <h3 className="text-md font-semibold mb-2">Uptime Last 30 Minutes</h3>
-                      <div className="flex items-center space-x-1">
-                        {site.history.map((status, index) => (
-                          <div 
-                            key={index} 
-                            className={`h-8 w-3 rounded-sm ${
-                              status ? "bg-green-500" : "bg-red-500"
-                            } transition-all hover:h-10 hover:opacity-80`} 
-                            title={status ? "Up" : "Down"}
-                          />
-                        ))}
-                      </div>
-                      <div className="flex justify-between mt-1 text-xs text-gray-500">
-                        <span>30 min ago</span>
-                        <span>Now</span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                      <Card className="bg-slate-50 dark:bg-slate-800">
-                        <CardContent className="p-4">
-                          <div className="text-sm font-semibold">Average Response Time</div>
-                          <div className="text-2xl font-bold mt-1">{site.responseTime}</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-slate-50 dark:bg-slate-800">
-                        <CardContent className="p-4">
-                          <div className="text-sm font-semibold">Uptime Percentage</div>
-                          <div className="text-2xl font-bold mt-1">{site.uptime}</div>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-slate-50 dark:bg-slate-800">
-                        <CardContent className="p-4">
-                          <div className="text-sm font-semibold">Status</div>
-                          <div className="flex items-center mt-1">
-                            <div className={`h-3 w-3 rounded-full mr-2 ${
-                              site.status === "up" ? "bg-green-500" : "bg-red-500"
-                            }`} />
-                            <span className="text-2xl font-bold">
-                              {site.status === "up" ? "Online" : "Offline"}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2 mt-6">
-                      <Button variant="outline" size="sm">View Details</Button>
-                      <Button variant="outline" size="sm">Edit</Button>
-                      <Button variant="destructive" size="sm">Delete</Button>
-                    </div>
-                  </CardContent>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          </Card>
-        ))}
-      </div>
+                <CardContent>
+                  {/* Mini colored bar history for the last 30 minutes */}
+                  <UptimeTicks ticks={website.recentTicks.map(t => t.status)} />
+
+                  {/* Expandable detailed history */}
+                  <Accordion type="single" collapsible>
+                    <AccordionItem value="ticks">
+                      <AccordionTrigger>
+                        View monitoring data (last 30 min)
+                      </AccordionTrigger>
+                      
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

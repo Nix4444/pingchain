@@ -1,0 +1,1 @@
+export type UptimeStatus = "HEALTHY" | "UNHEALTHY" | "UNKNOWN";
