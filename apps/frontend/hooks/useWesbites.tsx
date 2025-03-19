@@ -7,11 +7,12 @@ interface Website {
     id: string;
     url: string;
     disabled: boolean;
+    alias:string;
     ticks: {
         id: string;
         validatorId: string;
         websiteId: string;
-        status: "HEALTHY" | "UNHEALTHY" | "UNKNOWN";
+        status: "ONLINE" | "DOWN" | "UNKNOWN";
         latency: number;
         timestamp: string;
     }[];
@@ -27,9 +28,19 @@ export function useWebsites() {
         try {
             setIsLoading(true);
             setError(null);
-            //const token = await getToken();
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL}/api/websites`);
-            console.log(response.data);
+            const token = await getToken();
+            if (!token) {
+                setError(new Error('Unauthorized'));
+                return;
+              }
+            const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL}/api/websites`,
+                {
+                    headers: {
+                        Authorization: token
+                    }
+                }
+            );
             setWebsites(response.data.websites);
         } catch (error) {
             console.error('Error fetching websites:', error);

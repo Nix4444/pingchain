@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "WebsiteStatus" AS ENUM ('HEALTHY', 'UNHEALTHY', 'UNKNOWN');
+CREATE TYPE "WebsiteStatus" AS ENUM ('ONLINE', 'DOWN', 'UNKNOWN');
 
 -- CreateTable
 CREATE TABLE "User" (

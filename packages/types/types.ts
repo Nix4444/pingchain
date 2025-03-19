@@ -1,1 +1,1 @@
-export type UptimeStatus = "HEALTHY" | "UNHEALTHY" | "UNKNOWN";
+export type UptimeStatus = "ONLINE" | "DOWN" | "UNKNOWN";

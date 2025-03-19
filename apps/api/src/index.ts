@@ -1,9 +1,9 @@
 import express from "express"
-import dotnev from "dotenv"
+import dotenv from "dotenv"
 import { authMiddleware } from "./middleware"
 import { prismaClient } from "@repo/db"
 import cors from "cors";
-dotnev.config()
+dotenv.config()
 const PORT = process.env.PORT || 8080
 const app = express();
 app.use(cors())
@@ -12,14 +12,15 @@ app.use(express.json())
 
 //add zod
 
-app.post("/api/website", authMiddleware, async (req, res) => {
+app.post("/api/website", authMiddleware, async (req,res) => {
     const userId = req.userId!
-    const { url } = req.body
+    const { url,alias } = req.body
     try {
         const data = await prismaClient.website.create({
             data: {
                 userId: userId,
-                url: url
+                url: url,
+                alias: alias
             }
         })
         res.json({
@@ -93,9 +94,9 @@ app.get("/api/websites", authMiddleware, async (req, res) => {
 
 })
 
-app.put("/api/website", authMiddleware, async (req, res) => {
+app.delete("/api/website/:websiteId", authMiddleware, async (req, res) => {
     const userId = req.userId;
-    const websiteId = req.body.websiteId;
+    const websiteId = req.params.websiteId;
 
     try {
         const updatedWebsite = await prismaClient.website.update({

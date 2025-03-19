@@ -16,6 +16,7 @@ model User {
 model Website {
   id     String         @id @default(uuid())
   url    String
+  alias String
   userId String
   ticks  WebsiteTicks[]
   disabled Boolean @default(false)
@@ -41,7 +42,7 @@ model WebsiteTicks {
 }
 
 enum WebsiteStatus {
-  HEALTHY
-  UNHEALTHY
+  ONLINE
+  DOWN
   UNKNOWN
 }
