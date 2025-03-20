@@ -53,7 +53,7 @@ export default function Appbar() {
             <SignedIn>
               <div className="flex items-center space-x-4">
                 <Link href="/dashboard">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" className="cursor-pointer" size="sm">
                     Dashboard
                   </Button>
                 </Link>

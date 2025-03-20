@@ -96,6 +96,12 @@ export function WebsiteModal({ onClose, onSuccess }: WebsiteModalProps = {}) {
                 placeholder="My Website" 
                 value={alias}
                 onChange={(e) => setAlias(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSubmit(e);
+                  }
+                }}
+                required
               />
             </div>
             {error && (
@@ -105,10 +111,11 @@ export function WebsiteModal({ onClose, onSuccess }: WebsiteModalProps = {}) {
         </form>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
         <Button 
           onClick={handleSubmit} 
           disabled={isSubmitting}
+          className="cursor-pointer"
         >
           {isSubmitting ? "Adding..." : "Add Website"}
         </Button>

@@ -28,6 +28,7 @@ model Validator {
   location  String
   ip        String
   ticks     WebsiteTicks[]
+  pendingPayouts Float @default(0)
 }
 
 model WebsiteTicks {

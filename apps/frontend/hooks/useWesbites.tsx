@@ -29,6 +29,7 @@ export function useWebsites() {
             setIsLoading(true);
             setError(null);
             const token = await getToken();
+            console.log(process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL);
             if (!token) {
                 setError(new Error('Unauthorized'));
                 return;
