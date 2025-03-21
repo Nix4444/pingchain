@@ -25,8 +25,8 @@ export default function Appbar() {
             <Link href="#features" className="text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
               Features
             </Link>
-            <Link href="#validators" className="text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
-              Validators
+            <Link href="/validator" className="text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
+              Become a Validator
             </Link>
             <Link href="#pricing" className="text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
               Pricing
@@ -108,11 +108,11 @@ export default function Appbar() {
             Features
           </Link>
           <Link 
-            href="#validators" 
+            href="/validator" 
             className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800"
             onClick={() => setIsMenuOpen(false)}
           >
-            Validators
+            Become a Validator
           </Link>
           <Link 
             href="#pricing" 
