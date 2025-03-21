@@ -23,7 +23,8 @@ export interface ValidateIncomingMessage{
 export interface ValidateOutgoingMessage{
     callbackId:string,
     websiteId:string,
-    url:string  
+    url:string,
+    validatorId:string
 }
 
 export type IncomingMessage = {
