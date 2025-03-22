@@ -47,23 +47,47 @@ const useValidatorWebSocket = () => {
     ws.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("WebSocket message received:", data);
         
         if (data.type === 'signup') {
-          validatorIdRef.current = data.validatorId;
-          setState((prev) => ({ 
-            ...prev, 
-            validatorId: data.validatorId,
-            error: null
-          }));
+          console.log("Signup response received:", data);
+          const validatorIdValue = data.validatorId || (data.data && data.data.validatorId);
+          
+          if (validatorIdValue) {
+            validatorIdRef.current = validatorIdValue;
+            setState((prev) => ({ 
+              ...prev, 
+              validatorId: validatorIdValue,
+              error: null
+            }));
+            console.log("State updated with validatorId:", validatorIdValue);
+          } else {
+            console.error("No validatorId found in signup response:", data);
+            setState((prev) => ({ ...prev, error: "Invalid signup response from server" }));
+          }
         } else if (data.type === 'validate') {
           const validateData = data.data;
           const startTime = Date.now();
           const messageToSign = `Replying to ${validateData.callbackId}`;
-          const signatureBytes = await signMessage(new TextEncoder().encode(messageToSign));
-          const signature = JSON.stringify(Array.from(signatureBytes));
+          
+          let signature;
+          try {
+            const signatureBytes = await signMessage(new TextEncoder().encode(messageToSign));
+            signature = JSON.stringify(Array.from(signatureBytes));
+          } catch (error) {
+            console.error("Error signing validation message:", error);
+            setState(prev => ({ ...prev, error: "Failed to sign validation message" }));
+            return;
+          }
           
           try {
-            const response = await fetch(validateData.url);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_EXPRESS_BACKEND_URL}/api/proxy`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ url: validateData.url })
+            });
             const endTime = Date.now();
             const latency = endTime - startTime;
             const status = response.status;
@@ -123,16 +147,25 @@ const useValidatorWebSocket = () => {
     }
 
     try {
+      console.log("Attempting to register validator...");
       const callbackId = uuidv4();
       const messageToSign = `Signed message for ${callbackId} ${publicKey.toBase58()}`;
-      const signatureBytes = await signMessage(new TextEncoder().encode(messageToSign));
+      
+      let signatureBytes;
+      try {
+        signatureBytes = await signMessage(new TextEncoder().encode(messageToSign));
+      } catch (error) {
+        console.error("Error signing registration message:", error);
+        setState(prev => ({ ...prev, error: "Failed to sign registration message. Please approve the signature request." }));
+        return;
+      }
 
       // Get IP address
       const ipResponse = await fetch('https://api.ipify.org?format=json');
       const ipData = await ipResponse.json();
       const ip = ipData.ip;
 
-      socket.send(JSON.stringify({
+      const signupMessage = {
         type: 'signup',
         data: {
           callbackId,
@@ -140,11 +173,14 @@ const useValidatorWebSocket = () => {
           publicKey: publicKey.toBase58(),
           signedMessage: JSON.stringify(Array.from(signatureBytes))
         }
-      }));
+      };
+      
+      console.log("Sending signup message:", signupMessage);
+      socket.send(JSON.stringify(signupMessage));
 
     } catch (error) {
-      console.error("Error signing message:", error);
-      setState(prev => ({ ...prev, error: "Failed to sign message" }));
+      console.error("Error during validator registration:", error);
+      setState(prev => ({ ...prev, error: "Registration failed: " + (error instanceof Error ? error.message : String(error)) }));
     }
   }, [socket, publicKey, signMessage]);
 

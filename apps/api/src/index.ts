@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import { authMiddleware } from "./middleware"
 import { prismaClient } from "@repo/db"
 import cors from "cors";
+import axios from "axios";
 dotenv.config()
 const PORT = process.env.PORT || 8080
 const app = express();
@@ -11,6 +12,45 @@ app.use(express.json())
 
 
 //add zod
+
+app.post("/api/proxy", async (req, res) => {
+    const { url } = req.body;
+    
+    if (!url) {
+        res.status(400).json({
+            success: false,
+            message: "URL is required"
+        });
+        return;
+    }
+
+    try {
+        const response = await axios.get(url, {
+            validateStatus: () => true, 
+            timeout: 20000 
+        });
+    
+        if (response.status >= 200 && response.status < 300) {
+            res.status(200).json({
+                success: true,
+                status: response.status,
+                statusText: response.statusText
+            });
+        } else {
+            res.status(response.status).json({
+                success: false,
+                status: response.status,
+                statusText: response.statusText
+            });
+        }
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to complete the request",
+            error: error.message
+        });
+    }
+});
 
 app.post("/api/website", authMiddleware, async (req,res) => {
     const userId = req.userId!

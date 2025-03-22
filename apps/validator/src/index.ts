@@ -17,9 +17,17 @@ async function signMessage(message: string, keypair: Keypair) {
     return JSON.stringify(Array.from(signature));
 }
 async function main(){
-    const keypair = Keypair.fromSecretKey(
-        Uint8Array.from("asndjshdjshdsdsds") //sign it using the wallet provider
-    )
+    // Option 1: Generate a new keypair (for development/testing)
+    const keypair = Keypair.generate();
+    
+    // Option 2: Load from environment variable (for production)
+    // const secretKeyString = process.env.VALIDATOR_SECRET_KEY;
+    // if (!secretKeyString) {
+    //   throw new Error("VALIDATOR_SECRET_KEY not found in environment variables");
+    // }
+    // const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
+    // const keypair = Keypair.fromSecretKey(secretKey);
+    
     const ws = new WebSocket(`${process.env.WS_URL}`);
 
     ws.onmessage = async (event) =>{

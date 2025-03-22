@@ -19,6 +19,11 @@ const ValidatorDashboard = () => {
     registerValidator 
   } = useValidatorWebSocket();
   
+  // Add debugging
+  useEffect(() => {
+    console.log("ValidatorDashboard state:", { connected, validatorId, error });
+  }, [connected, validatorId, error]);
+  
   const [timeActive, setTimeActive] = useState<number>(0);
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -93,13 +98,13 @@ const ValidatorDashboard = () => {
               disabled={!connected}
               className="bg-green-600 hover:bg-green-700"
             >
-              Register as Validator
+              Connect to our Validator Network
             </Button>
             {!connected && <p className="mt-2 text-yellow-600">Connecting to server...</p>}
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Status Card */}
           <Card>
             <CardHeader className="pb-2">
@@ -113,27 +118,6 @@ const ValidatorDashboard = () => {
               <div className="mt-2 text-sm text-gray-500">
                 Validator ID: {validatorId.substring(0, 8)}...
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Time Active Card */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Time Active</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-blue-500" />
-              <span className="text-xl font-mono">{formatTime(timeActive)}</span>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Sites Validated</CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center space-x-2">
-              <Server className="h-5 w-5 text-purple-500" />
-              <span className="text-xl font-medium">{websitesValidated || 0}</span>
             </CardContent>
           </Card>
 
