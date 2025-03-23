@@ -1,0 +1,20 @@
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+COPY ./packages ./packages
+COPY ./pnpm-lock.yaml ./pnpm-workspace.yaml ./
+COPY ./package.json ./package.json
+COPY ./turbo.json ./turbo.json
+COPY ./apps/api ./apps/api
+
+RUN npm install -g pnpm
+RUN pnpm install
+RUN pnpm db:generate
+
+RUN cd apps/api && pnpm run build
+EXPOSE 3002
+
+ENV NODE_ENV=production
+
+CMD ["pnpm", "run", "start:api"]
