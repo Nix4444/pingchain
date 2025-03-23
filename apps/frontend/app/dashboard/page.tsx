@@ -2,12 +2,6 @@
 
   import { useWebsites } from "@/hooks/useWesbites";
   import { 
-    Accordion, 
-    AccordionContent, 
-    AccordionItem, 
-    AccordionTrigger 
-  } from "@/components/ui/accordion";
-  import { 
     Card, 
     CardContent, 
     CardDescription, 
@@ -67,7 +61,7 @@
         }
       };
       checkToken();
-    }, []);
+    },);
     const processedWebsites = useMemo(() => {
       const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000);
       return websites.map((website) => {

@@ -12,7 +12,7 @@ export default function Validator() {
             Become a Pingchain Validator
           </h1>
           <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm p-2">
-            <ValidatorDashboard />
+              <ValidatorDashboard />
           </div>
         </div>
       </SolanaWalletProvider>

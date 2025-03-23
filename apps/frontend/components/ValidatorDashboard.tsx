@@ -3,10 +3,9 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import useValidatorWebSocket from "@/hooks/useValidatorWebSocket";
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Check, Clock, Server, Activity } from "lucide-react";
+import { AlertCircle, Check, Activity, RefreshCw } from "lucide-react";
 
 const ValidatorDashboard = () => {
   const { publicKey } = useWallet();
@@ -15,38 +14,10 @@ const ValidatorDashboard = () => {
     validatorId,
     error,
     pendingPayouts,
-    websitesValidated,
-    registerValidator 
+    registerValidator,
+    reconnect
   } = useValidatorWebSocket();
-  
-  // Add debugging
-  useEffect(() => {
-    console.log("ValidatorDashboard state:", { connected, validatorId, error });
-  }, [connected, validatorId, error]);
-  
-  const [timeActive, setTimeActive] = useState<number>(0);
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    
-    if (connected && validatorId) {
-      interval = setInterval(() => {
-        setTimeActive(prev => prev + 1);
-      }, 1000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [connected]);
-  
-  // Format time display
-  const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+
 
   if (!publicKey) {
     return (
@@ -60,7 +31,7 @@ const ValidatorDashboard = () => {
             <WalletMultiButton />
           </CardContent>
           <CardFooter className="text-sm text-gray-500 text-center">
-            You'll need a Solana wallet like Phantom or Solflare
+            You&apos;ll need a Solana wallet like Phantom or Backpack
           </CardFooter>
         </Card>
       </div>
@@ -77,9 +48,20 @@ const ValidatorDashboard = () => {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
-          <AlertCircle className="mr-2" />
-          <span>{error}</span>
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center justify-between">
+          <div className="flex items-center">
+            <AlertCircle className="mr-2" />
+            <span>{error}</span>
+          </div>
+          <Button 
+            onClick={reconnect} 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1 text-red-700"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Reload Page
+          </Button>
         </div>
       )}
 
@@ -91,7 +73,7 @@ const ValidatorDashboard = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              As a validator, you'll help verify website uptime and earn SOL rewards for each validation.
+              As a validator, you&apos;ll help verify website uptime and earn SOL rewards for each validation.
             </p>
             <Button 
               onClick={registerValidator} 
@@ -112,8 +94,19 @@ const ValidatorDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="flex items-center space-x-2">
-                <div className="bg-green-500 rounded-full h-3 w-3"></div>
-                <span className="font-medium">Active</span>
+                <div className={`${connected ? "bg-green-500" : "bg-red-500"} rounded-full h-3 w-3`}></div>
+                <span className="font-medium">{connected ? "Active" : "Disconnected"}</span>
+                {!connected && (
+                  <Button 
+                    onClick={reconnect} 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center gap-1 text-blue-600 ml-2 p-0 h-auto"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Reload
+                  </Button>
+                )}
               </div>
               <div className="mt-2 text-sm text-gray-500">
                 Validator ID: {validatorId.substring(0, 8)}...
@@ -147,7 +140,7 @@ const ValidatorDashboard = () => {
               </li>
               <li className="flex items-start space-x-2">
                 <Check className="h-5 w-5 text-green-500 mt-0.5" />
-                <span>Each time you validate a website's uptime, you'll earn 100 lamports</span>
+                <span>Each time you validate a website&apos;s uptime, you&apos;ll earn 100 lamports</span>
               </li>
               <li className="flex items-start space-x-2">
                 <Check className="h-5 w-5 text-green-500 mt-0.5" />

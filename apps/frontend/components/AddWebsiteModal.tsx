@@ -12,7 +12,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@clerk/nextjs"
-import { get } from "http"
 
 interface WebsiteModalProps {
   onClose?: () => void;
@@ -57,14 +56,19 @@ export function WebsiteModal({ onClose, onSuccess }: WebsiteModalProps = {}) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error("Failed to add website");
+        throw new Error("Failed to add website",errorData.message);
       }
 
       if (onSuccess) {
         onSuccess();
       }
-    } catch (err: any) {
-      setError("An error occurred");
+      
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unknown error occurred");
+      }
     } finally {
       setIsSubmitting(false);
     }
