@@ -1,4 +1,3 @@
-## ssh into vm and start the new image
 name: deploy the API
 on:
   push:
