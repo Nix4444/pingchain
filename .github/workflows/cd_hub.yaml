@@ -22,4 +22,6 @@ jobs:
           file: ./docker/Dockerfile.hub
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/pingchain-hub:${{ github.sha }}
+          build-args:
+            - DATABASE_URL=${{ secrets.DATABASE_URL }}
       

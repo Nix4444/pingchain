@@ -22,4 +22,9 @@ jobs:
           file: ./docker/Dockerfile.frontend
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/pingchain-frontend:${{ github.sha }}
-          
+          build-args:
+            - CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+            - CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+            - EXPRESS_BACKEND_URL=${{ secrets.EXPRESS_BACKEND_URL }}
+            - WS_URL=${{ secrets.WS_URL }}
+            - DATABASE_URL=${{ secrets.DATABASE_URL }}
