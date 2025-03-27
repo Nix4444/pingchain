@@ -125,6 +125,7 @@ app.get("/api/websites", authMiddleware, async (req, res) => {
         })
 
     } catch (e) {
+        console.log(e)
         res.status(500).json({
             success: false,
             message: "Failed to get websites"

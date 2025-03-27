@@ -61,8 +61,7 @@ const useValidatorWebSocket = () => {
             
             if (data.type === 'signup') {
               console.log("Signup response received:", data);
-              const validatorIdValue = data.validatorId || (data.data && data.data.validatorId);
-              
+              const validatorIdValue = data.data.validatorId
               if (validatorIdValue) {
                 validatorIdRef.current = validatorIdValue;
                 setState((prev) => ({ 
