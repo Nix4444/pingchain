@@ -98,8 +98,11 @@ async function signupHandler(socket: WebSocket, { ip, publicKey, signedMessage, 
             })
             if (validator) {
                 socket.send(JSON.stringify({
-                    validatorId: validator.id,
-                    callbackId: callbackId
+                    type: 'signup', 
+                    data: {
+                        validatorId: validator.id,
+                        callbackId: callbackId
+                    }
                 }))
 
                 availableValidators.push({

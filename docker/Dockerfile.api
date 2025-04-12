@@ -7,6 +7,10 @@ COPY ./pnpm-lock.yaml ./pnpm-workspace.yaml ./
 COPY ./package.json ./package.json
 COPY ./turbo.json ./turbo.json
 COPY ./apps/api ./apps/api
+ARG DATABASE_URL
+
+ENV DATABASE_URL=${DATABASE_URL}
+ENV PORT=3002
 
 RUN npm install -g pnpm
 RUN pnpm install

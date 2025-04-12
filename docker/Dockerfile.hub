@@ -7,7 +7,9 @@ COPY ./pnpm-lock.yaml ./pnpm-workspace.yaml ./
 COPY ./package.json ./package.json
 COPY ./turbo.json ./turbo.json
 COPY ./apps/hub ./apps/hub
-
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+ENV WS_PORT=3003
 RUN npm install -g pnpm
 RUN pnpm install
 RUN pnpm db:generate

@@ -12,6 +12,12 @@ app.use(express.json())
 
 
 //add zod
+app.get("/api/health", (req, res) => {
+    res.json({
+        success: true,
+        message: "Server is running"
+    })
+})
 
 app.post("/api/proxy", async (req, res) => {
     const { url } = req.body;
@@ -125,6 +131,7 @@ app.get("/api/websites", authMiddleware, async (req, res) => {
         })
 
     } catch (e) {
+        console.log(e)
         res.status(500).json({
             success: false,
             message: "Failed to get websites"
@@ -161,4 +168,6 @@ app.delete("/api/website/:websiteId", authMiddleware, async (req, res) => {
     }
 })
 
-app.listen(PORT)
+app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+  });
