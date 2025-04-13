@@ -25,5 +25,10 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/pingchain-api:${{ github.sha }}
           build-args: |
            DATABASE_URL=${{ secrets.DATABASE_URL }}
+      - name: Deploy to VM
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          chmod 700 /home/runner/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key admin@${{ secrets.VM_IP }} -t "docker pull ${{ secrets.DOCKER_USERNAME }}/pingchain-api:${{ github.sha }} && docker stop pingchain-api && docker rm pingchain-api && docker run -d -p 3002:3002 ${{ secrets.DOCKER_USERNAME }}/pingchain-api:${{ github.sha }}"
 
   
