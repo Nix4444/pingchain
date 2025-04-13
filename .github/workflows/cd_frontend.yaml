@@ -28,3 +28,9 @@ jobs:
            EXPRESS_BACKEND_URL=${{ secrets.EXPRESS_BACKEND_URL }}
            WS_URL=${{ secrets.WS_URL }}
            DATABASE_URL=${{ secrets.DATABASE_URL }}
+      - name: Deploy to VM
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" &> ~/ssh_key
+          chmod 700 /home/runner/ssh_key
+          ssh -o StrictHostKeyChecking=no -i ~/ssh_key admin@${{ secrets.VM_IP }} -t "docker pull ${{ secrets.DOCKER_USERNAME }}/pingchain-frontend:${{ github.sha }} && docker stop pingchain-frontend && docker rm pingchain-frontend && docker run --name pingchain-frontend -d -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/pingchain-frontend:${{ github.sha }}"
+      
