@@ -7,6 +7,7 @@ import axios from "axios";
 dotenv.config()
 const PORT = process.env.PORT || 8080
 const app = express();
+app.set('trust proxy', true);
 app.use(cors())
 app.use(express.json())
 
